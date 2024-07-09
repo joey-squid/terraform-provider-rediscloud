@@ -408,7 +408,6 @@ func resourceRedisCloudEssentialsDatabase() *schema.Resource {
 				Description:      "Use TLS for authentication",
 				Type:             schema.TypeBool,
 				Optional:         true,
-				DiffSuppressFunc: suppressIfPaygDisabled,
 			},
 		},
 	}
@@ -513,6 +512,7 @@ func resourceRedisCloudEssentialsDatabaseCreate(ctx context.Context, d *schema.R
 		createModules = append(createModules, createModule)
 	}
 	createDatabaseRequest.Modules = &createModules
+  createDatabaseRequest.EnableTls = redis.Bool(d.Get("enable_tls").(bool))
 
 	if d.Get("enable_payg_features").(bool) {
 		createDatabaseRequest.MemoryLimitInGB = redis.Float64(d.Get("memory_limit_in_gb").(float64))
@@ -520,7 +520,6 @@ func resourceRedisCloudEssentialsDatabaseCreate(ctx context.Context, d *schema.R
 		createDatabaseRequest.UseExternalEndpointForOSSClusterAPI = redis.Bool(d.Get("external_endpoint_for_oss_cluster_api").(bool))
 		createDatabaseRequest.EnableDatabaseClustering = redis.Bool(d.Get("enable_database_clustering").(bool))
 		createDatabaseRequest.RegexRules = interfaceToStringSlice(d.Get("regex_rules").([]interface{}))
-		createDatabaseRequest.EnableTls = redis.Bool(d.Get("enable_tls").(bool))
 	}
 
 	databaseId, err := api.client.FixedDatabases.Create(ctx, subId, createDatabaseRequest)
@@ -814,6 +813,7 @@ func resourceRedisCloudEssentialsDatabaseUpdate(ctx context.Context, d *schema.R
 		createAlerts = append(createAlerts, createAlert)
 	}
 	updateDatabaseRequest.Alerts = &createAlerts
+  updateDatabaseRequest.EnableTls = redis.Bool(d.Get("enable_tls").(bool))
 
 	if d.Get("enable_payg_features").(bool) {
 		updateDatabaseRequest.MemoryLimitInGB = redis.Float64(d.Get("memory_limit_in_gb").(float64))
@@ -821,7 +821,6 @@ func resourceRedisCloudEssentialsDatabaseUpdate(ctx context.Context, d *schema.R
 		updateDatabaseRequest.UseExternalEndpointForOSSClusterAPI = redis.Bool(d.Get("external_endpoint_for_oss_cluster_api").(bool))
 		updateDatabaseRequest.EnableDatabaseClustering = redis.Bool(d.Get("enable_database_clustering").(bool))
 		updateDatabaseRequest.RegexRules = interfaceToStringSlice(d.Get("regex_rules").([]interface{}))
-		updateDatabaseRequest.EnableTls = redis.Bool(d.Get("enable_tls").(bool))
 	}
 
 	err = api.client.FixedDatabases.Update(ctx, subId, databaseId, updateDatabaseRequest)
